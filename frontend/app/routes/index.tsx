@@ -6,12 +6,12 @@ import { FilterPanel } from '../components/FilterPanel'
 import { searchTorrents, type TorrentResult } from '../lib/api'
 import { Magnet, Loader2 } from 'lucide-react'
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/')({ 
   component: HomePage,
 })
 
 const CATEGORIES = ['all', 'movies', 'tv', 'anime', 'music', 'games', 'software']
-const SOURCES_LIST = ['yts', 'nyaa', 'eztv', '1337x', 'tpb', 'rarbg']
+const SOURCES_LIST = ['yts', 'nyaa', 'eztv', '1337x', 'tpb', 'rarbg', 'tgx', 'kat', 'lime']
 
 export default function HomePage() {
   const [results, setResults] = useState<TorrentResult[]>([])
@@ -46,7 +46,7 @@ export default function HomePage() {
           <Magnet className="w-10 h-10 text-sky-400" />
           <h1 className="text-4xl font-bold text-white">Torrent Search</h1>
         </div>
-        <p className="text-gray-400">Busca unificada em {SOURCES_LIST.length} fontes — magnet links diretos</p>
+        <p className="text-gray-400">Busca unificada em {SOURCES_LIST.length} fontes &bull; magnet links diretos</p>
       </div>
 
       <SearchBar onSearch={handleSearch} loading={loading} />
