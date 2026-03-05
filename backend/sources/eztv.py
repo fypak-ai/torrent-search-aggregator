@@ -4,21 +4,17 @@ from .base import TorrentSource
 class EZTVSource(TorrentSource):
     id = "eztv"
     name = "EZTV"
-    categories = ["tv", "shows"]
+    categories = ["all", "tv", "shows"]
     BASE_URL = "https://eztv.re/api"
 
     async def search(self, session, query, category, limit):
-        if category not in ("all", "tv", "shows"):
-            return []
         try:
             params = {"query": query, "limit": min(limit, 100), "page": 1}
-            async with session.get(f"{self.BASE_URL}/get-torrents", params=params, timeout=10) as r:
+            async with session.get(f"{self.BASE_URL}/get-torrents", params=params, timeout=12) as r:
                 data = await r.json()
             torrents = data.get("torrents") or []
             results = []
             for t in torrents[:limit]:
-                if query.lower() not in t.get("title", "").lower():
-                    continue
                 results.append(self._result(
                     title=t.get("title", ""),
                     magnet=t.get("magnet_url", ""),
