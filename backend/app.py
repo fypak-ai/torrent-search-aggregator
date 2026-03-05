@@ -11,6 +11,16 @@ CORS(app)
 
 SOURCES = get_all_sources()
 
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/122.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json, text/html, */*",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
 
 @app.route("/api/search")
 def search():
@@ -33,12 +43,12 @@ def search():
 
 async def _search_all(sources, query, category, limit):
     import aiohttp
-    import ssl
     results = []
-    # Use default SSL context (trusts system CAs) - ssl=False breaks HTTPS on Windows
-    ssl_ctx = ssl.create_default_context()
-    connector = aiohttp.TCPConnector(ssl=ssl_ctx)
-    async with aiohttp.ClientSession(connector=connector) as session:
+    connector = aiohttp.TCPConnector(ssl=False)
+    async with aiohttp.ClientSession(
+        connector=connector,
+        headers=HEADERS
+    ) as session:
         tasks = [s.search(session, query, category, limit) for s in sources]
         all_results = await asyncio.gather(*tasks, return_exceptions=True)
         for s, r in zip(sources, all_results):
