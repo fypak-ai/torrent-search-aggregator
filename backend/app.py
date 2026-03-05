@@ -1,7 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import asyncio
+import nest_asyncio
 from sources import get_all_sources
+
+nest_asyncio.apply()
 
 app = Flask(__name__)
 CORS(app)
@@ -23,14 +26,16 @@ def search():
         s for s in SOURCES if s.id in sources_param.split(",")
     ]
 
-    results = asyncio.run(_search_all(enabled_sources, query, category, limit))
+    loop = asyncio.get_event_loop()
+    results = loop.run_until_complete(_search_all(enabled_sources, query, category, limit))
     return jsonify({"query": query, "total": len(results), "results": results})
 
 
 async def _search_all(sources, query, category, limit):
     import aiohttp
     results = []
-    async with aiohttp.ClientSession() as session:
+    connector = aiohttp.TCPConnector(ssl=False)
+    async with aiohttp.ClientSession(connector=connector) as session:
         tasks = [s.search(session, query, category, limit) for s in sources]
         all_results = await asyncio.gather(*tasks, return_exceptions=True)
         for r in all_results:
