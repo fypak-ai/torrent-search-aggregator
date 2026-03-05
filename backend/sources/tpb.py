@@ -1,10 +1,11 @@
+import urllib.parse
 from .base import TorrentSource
 
 TRACKERS = [
+    "udp://tracker.opentrackr.org:1337/announce",
+    "udp://open.demonii.com:1337/announce",
+    "udp://tracker.openbittorrent.com:80/announce",
     "udp://tracker.coppersurfer.tk:6969/announce",
-    "udp://9.rarbg.to:2920/announce",
-    "udp://tracker.opentrackr.org:1337",
-    "udp://tracker.internetwarriors.net:1337/announce",
     "udp://tracker.leechers-paradise.org:6969/announce",
 ]
 
@@ -12,11 +13,11 @@ TRACKERS = [
 class TPBSource(TorrentSource):
     id = "tpb"
     name = "The Pirate Bay"
-    categories = ["movies", "tv", "music", "games", "software", "anime"]
-    # apibay.org is the official TPB API mirror
+    categories = ["all", "movies", "tv", "music", "games", "software", "anime"]
+    # apibay.org is the official TPB JSON API
     APIS = [
         "https://apibay.org",
-        "https://piratebay.live",
+        "https://apibay.nocensor.space",
     ]
     CAT_MAP = {
         "movies": 200, "tv": 205, "music": 100,
@@ -28,8 +29,11 @@ class TPBSource(TorrentSource):
         for api in self.APIS:
             try:
                 params = {"q": query, "cat": cat}
-                async with session.get(f"{api}/q.php", params=params, timeout=12) as r:
+                async with session.get(
+                    f"{api}/q.php", params=params, timeout=15
+                ) as r:
                     if r.status != 200:
+                        print(f"[TPB] {api} status {r.status}")
                         continue
                     data = await r.json(content_type=None)
                 if not data or (len(data) == 1 and data[0].get("name") == "No results returned"):
@@ -37,7 +41,7 @@ class TPBSource(TorrentSource):
                 results = []
                 for t in data[:limit]:
                     info_hash = t.get("info_hash", "")
-                    if not info_hash or info_hash == "0000000000000000000000000000000000000000":
+                    if not info_hash or info_hash == "0" * 40:
                         continue
                     magnet = self._magnet(info_hash, t.get("name", ""))
                     results.append(self._result(
@@ -56,5 +60,6 @@ class TPBSource(TorrentSource):
         return []
 
     def _magnet(self, hash_, name):
-        tr = "&tr=".join(TRACKERS)
-        return f"magnet:?xt=urn:btih:{hash_}&dn={name.replace(' ', '+')}&tr={tr}"
+        dn = urllib.parse.quote(name)
+        tr = "&tr=".join(urllib.parse.quote(t) for t in TRACKERS)
+        return f"magnet:?xt=urn:btih:{hash_}&dn={dn}&tr={tr}"
