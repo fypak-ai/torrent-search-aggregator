@@ -1,3 +1,4 @@
+import urllib.parse
 from .base import TorrentSource
 
 TRACKERS = [
@@ -12,16 +13,16 @@ TRACKERS = [
 class YTSSource(TorrentSource):
     id = "yts"
     name = "YTS"
-    categories = ["movies"]
+    categories = ["movies", "all"]
     BASE_URL = "https://yts.mx/api/v2"
 
     async def search(self, session, query, category, limit):
         if category not in ("all", "movies"):
             return []
         try:
-            params = {"query_term": query, "limit": min(limit, 50)}
-            async with session.get(f"{self.BASE_URL}/list_movies.json", params=params, timeout=10) as r:
-                data = await r.json()
+            params = {"query_term": query, "limit": min(limit, 50), "sort_by": "seeds"}
+            async with session.get(f"{self.BASE_URL}/list_movies.json", params=params, timeout=12) as r:
+                data = await r.json(content_type=None)
             movies = data.get("data", {}).get("movies") or []
             results = []
             for m in movies:
@@ -44,4 +45,4 @@ class YTSSource(TorrentSource):
 
     def _magnet(self, hash_, title):
         tr = "&tr=".join(TRACKERS)
-        return f"magnet:?xt=urn:btih:{hash_}&dn={title.replace(' ', '+')}&tr={tr}"
+        return f"magnet:?xt=urn:btih:{hash_}&dn={urllib.parse.quote(title)}&tr={tr}"
