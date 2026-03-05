@@ -12,12 +12,18 @@ class TorrentSource(ABC):
         pass
 
     def _result(self, title, magnet, size="", seeders=0, leechers=0, category="", date="", extra=None):
+        def _int(v):
+            try:
+                return int(str(v).strip().replace(',', ''))
+            except Exception:
+                return 0
+
         r = {
             "title": title,
             "magnet": magnet,
-            "size": size,
-            "seeders": int(seeders) if seeders else 0,
-            "leechers": int(leechers) if leechers else 0,
+            "size": str(size).strip(),
+            "seeders": _int(seeders),
+            "leechers": _int(leechers),
             "source": self.name,
             "source_id": self.id,
             "category": category,
