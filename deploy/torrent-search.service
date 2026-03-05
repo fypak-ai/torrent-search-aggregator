@@ -1,0 +1,22 @@
+[Unit]
+Description=Torrent Search Aggregator - Flask Backend
+After=network.target
+
+[Service]
+Type=simple
+User=torrent
+WorkingDirectory=/opt/torrent-search/backend
+EnvironmentFile=/opt/torrent-search/backend/.env
+ExecStart=/opt/torrent-search/backend/venv/bin/gunicorn app:app \
+    --bind 127.0.0.1:5000 \
+    --workers 2 \
+    --timeout 60 \
+    --access-logfile - \
+    --error-logfile -
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
