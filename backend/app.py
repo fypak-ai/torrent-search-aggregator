@@ -33,14 +33,20 @@ def search():
 
 async def _search_all(sources, query, category, limit):
     import aiohttp
+    import ssl
     results = []
-    connector = aiohttp.TCPConnector(ssl=False)
+    # Use default SSL context (trusts system CAs) - ssl=False breaks HTTPS on Windows
+    ssl_ctx = ssl.create_default_context()
+    connector = aiohttp.TCPConnector(ssl=ssl_ctx)
     async with aiohttp.ClientSession(connector=connector) as session:
         tasks = [s.search(session, query, category, limit) for s in sources]
         all_results = await asyncio.gather(*tasks, return_exceptions=True)
-        for r in all_results:
+        for s, r in zip(sources, all_results):
             if isinstance(r, list):
+                print(f"[OK] {s.name}: {len(r)} results")
                 results.extend(r)
+            else:
+                print(f"[FAIL] {s.name}: {r}")
     results.sort(key=lambda x: x.get("seeders", 0), reverse=True)
     return results[:limit * len(sources)]
 
