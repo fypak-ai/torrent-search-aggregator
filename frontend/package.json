@@ -6,17 +6,19 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate": "tsr generate"
   },
   "dependencies": {
     "@tanstack/react-router": "^1.34.6",
-    "@tanstack/router-plugin": "^1.34.6",
     "axios": "^1.7.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "lucide-react": "^0.395.0"
   },
   "devDependencies": {
+    "@tanstack/router-plugin": "^1.34.6",
+    "@tanstack/router-cli": "^1.34.6",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
